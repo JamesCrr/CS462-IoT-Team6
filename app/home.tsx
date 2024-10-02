@@ -28,14 +28,14 @@ export default function Screen() {
   }
 
   const viewCalendar = () => {
-    router.replace('/calendar');
+    router.push('/calendar');
   }
 
   const viewCustomers = () => {
-    router.replace('/customers');
+    router.push('/customers');
   }
 
-  
+
   return (
     <View className='flex-1 justify-center items-center gap-5 p-6 bg-secondary/30'>
       <Card className='w-full max-w-sm p-6 rounded-2xl'>
