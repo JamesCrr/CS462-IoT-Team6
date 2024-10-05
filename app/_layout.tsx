@@ -10,6 +10,7 @@ import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 import { PortalHost } from "@rn-primitives/portal";
 import { ThemeToggle } from "~/components/ThemeToggle";
+import { Logout } from "~/components/Logout";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 
 const LIGHT_THEME: Theme = {
@@ -74,11 +75,18 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="home"
           options={{
             title: "Starter Base",
             headerRight: () => <ThemeToggle />,
+          }}
+        /> */}
+        <Stack.Screen
+          name="home"
+          options={{
+            title: "Home",
+            headerRight: () => <Logout />,
           }}
         />
       </Stack>

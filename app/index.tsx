@@ -30,7 +30,7 @@ export default function Screen() {
             </RadioGroup>
           </View>
 
-          <Button disabled={type == ""} onPress={signIn}>
+          <Button disabled={type == ""} onPress={signIn} variant={"outline"} className={"shadow shadow-foreground/5"}>
             <Text>Sign In</Text>
           </Button>
         </CardContent>
