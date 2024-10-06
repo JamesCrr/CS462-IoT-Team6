@@ -19,15 +19,15 @@ export default function Screen() {
   };
 
   const viewCustomers = () => {
-    router.push("/customers");
+    router.push("/event-attendees");
   };
 
   return (
     <View className="flex-1 justify-center items-center gap-5 p-6 bg-secondary/30">
-      <Button variant="outline" className="shadow shadow-foreground/5" onPress={() => viewCalendar()}>
+      <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCalendar}>
         <Text>View Calendar</Text>
       </Button>
-      <Button variant="outline" className="shadow shadow-foreground/5" onPress={() => viewCustomers()}>
+      <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
         <Text>View Customers</Text>
       </Button>
       <Button

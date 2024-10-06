@@ -31,7 +31,7 @@ export default function EventRecords() {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    fetchRecords();
+    // fetchRecords();
   }, []);
 
   const normalizeKeys = (records: any[]) => {
@@ -42,26 +42,26 @@ export default function EventRecords() {
     }));
   };
 
-  const fetchRecords = async () => {
-    setLoading(true);
-    try {
-      const records = await fetchEventRecords(userId, eventId);
-      console.log("Recordssss:", records);
-      const normalizedRecords = normalizeKeys(records);
-      setEventRecords(normalizedRecords);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Failed to fetch event records:", error.message);
-      } else {
-        console.error("Failed to fetch event records:", error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchRecords = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const records = await fetchEventRecords(userId, eventId);
+  //     console.log("Recordssss:", records);
+  //     const normalizedRecords = normalizeKeys(records);
+  //     setEventRecords(normalizedRecords);
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       console.error("Failed to fetch event records:", error.message);
+  //     } else {
+  //       console.error("Failed to fetch event records:", error);
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSearch = () => {
-    fetchRecords();
+    // fetchRecords();
   };
 
   return (

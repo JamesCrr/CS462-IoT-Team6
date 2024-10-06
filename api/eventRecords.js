@@ -1,13 +1,20 @@
-import { collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, where} from "firebase/firestore"; 
+import { collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where} from "firebase/firestore"; 
 import { db } from "../config/firebaseConfig";
 
+
+// Function to fetch all event 
+
+
+
 // Function to add a new event record
-export async function addEventRecord(userId, eventId, performance, remarks) {
+export async function addEventRecord(userId, eventId, achievements ,completion, rank, remarks) {
   try {
     const docRef = await addDoc(collection(db, 'eventRecords'), {
       userId: userId,
       eventId: eventId,
-      performance: performance,
+      achievements: achievements,
+      completion: completion,
+      rank: rank,
       remarks: remarks
     });
     console.log("Document successfully written with ID: ", docRef.id);
@@ -16,57 +23,64 @@ export async function addEventRecord(userId, eventId, performance, remarks) {
   }
 }
 
-// export async function fetchEventRecords() {
-//   try {
-//     const querySnapshot = await getDocs(collection(db, "eventRecords"));
-//     querySnapshot.forEach((doc) => {
-//       console.log(`${doc.id} =>`, doc.data());
-//     });
-//   } catch (e) {
-//     console.error("Error fetching documents: ", e);
-//   }
-// }
-
-export async function fetchEventRecords(userId = "", eventId = "") {
+export async function fetchEventRecord(eventId, userId) {
   try {
-    let q = collection(db, "eventRecords");
+    const eventDocRef = doc(db, "eventRecords", eventId);
+    const eventDoc = await getDoc(eventDocRef);
 
-    if (userId) {
-      q = query(q, where("userId", "==", userId));
+    if (eventDoc.exists()) {
+      const eventData = eventDoc.data();
+      console.log("UserRecords", eventData.records);
+      const userRecord = eventData.records.find(record => record.userId === userId);
+
+      if (userRecord) {
+        console.log("User Record:", userRecord);
+        return userRecord;
+      } else {
+        console.log("User not found in records");
+        return null;
+      }
+    } else {
+      console.log("No such document!");
+      return null;
     }
+  } catch (e) {
+    console.error("Error fetching document: ", e.message);
+    throw new Error("Failed to fetch event record");
+  }
+}
 
-    if (eventId) {
-      q = query(q, where("eventId", "==", eventId));
-    }
 
+export async function fetchAttendeesInEvent(eventId="") {
+  try {
+    const q = query(collection(db, "eventRecords"), eventId);
     const querySnapshot = await getDocs(q);
-    const records = [];
+    let attendees = [];
     querySnapshot.forEach((doc) => {
-      console.log("Document data:", doc.data());
-      records.push({ id: doc.id, ...doc.data() });
+      attendees.push(doc.data());
     });
-    console.log("Fetched event records:", records);
-    return records; // Return the fetched records
+    return attendees;
   } catch (e) {
     console.error("Error fetching documents: ", e.message);
     throw new Error("Failed to fetch event records");
   }
 }
 
-export async function updateEventRecord(docId, updatedPerformance, remarks) {
-  try {
-    const recordRef = doc(db, 'eventRecords', docId);
-    await updateDoc(recordRef, {
-      performance: updatedPerformance,
-      remarks: remarks
-    });
-    console.log("Document successfully updated!");
-  } catch (e) {
-    console.error("Error updating document: ", e);
-  }
-}
 
-export async function deleteEventRecord(docId) {
+// export async function updateEventRecord(userId, eventId, achievements ,completion, rank, remarks) {
+//   try {
+//     const recordRef = doc(db, 'eventRecords', eventId);
+//     await updateDoc(recordRef, {
+      
+//       remarks: remarks
+//     });
+//     console.log("Document successfully updated!");
+//   } catch (e) {
+//     console.error("Error updating document: ", e);
+//   }
+// }
+
+export async function deleteEvent(docId) {
   try {
     await deleteDoc(doc(db, 'eventRecords', docId));
     console.log("Document successfully deleted!");
@@ -74,5 +88,7 @@ export async function deleteEventRecord(docId) {
     console.error("Error deleting document: ", e);
   }
 }
+
+
 
 
