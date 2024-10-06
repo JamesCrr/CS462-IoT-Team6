@@ -35,40 +35,24 @@ interface EventUserRecords {
 
 export default function EventRecords() {
   const navigation = useNavigation();
-  const [eventRecord, setEventRecord] = useState<EventUserRecords | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const route = useRoute();
   const { eventId, userId } = route.params as { eventId: string; userId: string };
 
-  const [entries, setEntries] = React.useState<CarouselPhotos[]>([
-    { title: 'Photo 1', text: 'Description of photo 1' },
-    { title: 'Photo 2', text: 'Description of photo 2' },
-    { title: 'Photo 3', text: 'Description of photo 3' }
-  ]);
+  const [eventRecord, setEventRecord] = useState<EventUserRecords | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
 
   useEffect(() => {
-    console.log("UserId:", userId);
-    console.log("EventId:", eventId);
     fetchEvent();
   }, []);
 
   const fetchEvent = async () => {
     setLoading(true);
-
     try {
-      const eventRecord = await fetchEventRecord(eventId, userId);
-      console.log("EventRecord:", eventRecord); 
-      if (eventRecord == null) {
-        throw new Error("Event Records not found");
-      } else {
-        setEventRecord(eventRecord);
-      }
+      const record = await fetchEventRecord(eventId, userId);
+      setEventRecord(record);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error(error);
-      }
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -79,27 +63,28 @@ export default function EventRecords() {
       <View style={styles.header}>
         <Text style={styles.headerText}>Jonathan</Text>
       </View>
-      {/* <Carousel
-        data={entries}
-        renderItem={renderItem}
-        sliderWidth={Dimensions.get('window').width}
-        itemWidth={300}
-        loop={true}
-      /> */}
-      <View style={styles.details}>
-      {eventRecord ? (
+      <ScrollView contentContainerStyle={styles.details}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : eventRecord ? (
           <>
             <Text style={styles.detailText}>Achievements: {eventRecord.achievements.join(', ')}</Text>
             <Text style={styles.detailText}>Score: {eventRecord.score}/100</Text>
             <Text style={styles.detailText}>Completion %: {eventRecord.completion}%</Text>
             <Text style={styles.detailText}>Rank: {eventRecord.rank}</Text>
-            <Text style={styles.detailText}>Remarks: {eventRecord.remarks}</Text>
-            <TextInput style={styles.input} placeholder="Leave Remarks" />
+            <TextInput style={styles.input} placeholder="Leave Remarks" defaultValue={eventRecord.remarks} />
+            <Button
+              variant="outline"
+              style={styles.input}
+              className="shadow shadow-foreground/5"
+            >
+              <Text>Save</Text>
+            </Button>
           </>
         ) : (
-          <Text style={styles.noRecordText}>No Recorded Attendance</Text>
+          <Text style={styles.noRecordText}>No Record Found</Text>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -117,51 +102,45 @@ interface Styles {
   noRecordText: TextStyle;
 }
 
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    backgroundColor: '#fff',
   },
   header: {
-    margin: 10,
+    width: '100%',
+    padding: 20,
+    backgroundColor: '#f0f0f0', // Adjust the header background color as needed
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  slide: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    height: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  image: {
-    width: 280,
-    height: 150,
-    borderRadius: 8,
-  },
-  title: {
-    fontSize: 16,
+    color: '#333', // Adjust for better visibility
   },
   details: {
-    marginTop: 20,
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
   },
   detailText: {
-    fontSize: 18,
-    marginVertical: 4,
+    fontSize: 16,
+    color: '#666', // Softer text color
+    marginBottom: 10,
   },
   input: {
     height: 40,
-    width: '100%',
-    marginVertical: 10,
+    borderColor: '#ccc',
     borderWidth: 1,
-    padding: 10,
-  }, 
+    paddingHorizontal: 10,
+    marginVertical: 10,
+  },
   noRecordText: {
     fontSize: 18,
     color: 'red',
+    textAlign: 'center',
   },
 });
