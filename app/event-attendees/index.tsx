@@ -109,8 +109,8 @@ export default function EventRecords() {
               style={styles.attendee}
               onPress={() =>
               selectedEvent && router.push({
-                pathname: '/event-record',
-                params: { eventId: selectedEvent, userId: attendee.userId }
+                pathname: "/event-record",
+                params: { eventId: selectedEvent, userId: attendee.userId },
               })
               }
             >
