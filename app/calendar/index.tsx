@@ -26,6 +26,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "config/firebaseConfig.js";
+import { router } from "expo-router";
 
 interface Event {
   id: string;
@@ -54,12 +55,11 @@ export default function ThirtyDayCalendar() {
     var events: Event[] = [];
     const querySnapshot = await getDocs(collection(db, "events"));
     querySnapshot.forEach((doc) => {
-      console.log(doc.data().dateTime);
+      console.log(doc.data().datetime);
       const date = new Date(
-        doc.data().dateTime.seconds * 1000 +
-          doc.data().dateTime.nanoseconds / 1000000
+        doc.data().datetime.seconds * 1000 +
+          doc.data().datetime.nanoseconds / 1000000
       );
-
       var event: Event = {
         id: doc.id,
         title: doc.data().name,
@@ -145,10 +145,15 @@ export default function ThirtyDayCalendar() {
                       (event) => event.date === formatDate(day.toISOString())
                     )
                     .map((event) => (
-                      <View key={event.id} style={styles.event}>
-                        <Text style={styles.eventTitle}>{event.title}</Text>
-                        <Text style={styles.eventTime}>{event.time}</Text>
-                      </View>
+                      <TouchableOpacity
+                        key={event.id}
+                        onPress={() => router.push(`/event/${event.id}`)}
+                      >
+                        <View style={styles.event}>
+                          <Text style={styles.eventTitle}>{event.title}</Text>
+                          <Text style={styles.eventTime}>{event.time}</Text>
+                        </View>
+                      </TouchableOpacity>
                     ))}
                 </ScrollView>
               </>

@@ -1,4 +1,13 @@
-import { collection, doc, addDoc, getDoc, getDocs,  updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  addDoc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { daysInWeek } from "date-fns/constants";
 
@@ -23,14 +32,14 @@ export const fetchAllEvents = async () => {
   try {
     const eventsCollection = collection(db, "events");
     const querySnapshot = await getDocs(eventsCollection);
-    const events = querySnapshot.docs.map(doc => ({
+    const events = querySnapshot.docs.map((doc) => ({
       dateTime: doc.data().dateTime,
       eventId: doc.id,
       information: doc.data().information,
       itemsToBring: doc.data().itemsToBring,
       meetUpLocation: doc.data.meetUpLocation,
       name: doc.data().name,
-      participants: doc.data().participants,  
+      participants: doc.data().participants,
       volunteers: doc.data().volunteers,
     }));
     return events;
@@ -38,7 +47,20 @@ export const fetchAllEvents = async () => {
     console.error("Error fetching documents: ", e.message);
     throw new Error("Failed to fetch event records");
   }
-}
+};
+
+export const updateEvent = async (eventId = "", eventpayload) => {
+  try {
+    console.log(eventpayload);
+    const docRef = doc(db, "events", eventId);
+
+    await setDoc(docRef, eventpayload);
+    return "doc updated";
+  } catch (e) {
+    console.error("Error fetching documents: ", e.message);
+    throw new Error("Failed to fetch event records");
+  }
+};
 
 // export async function updateEventRecord(docId, updatedPerformance, remarks) {
 //   try {
