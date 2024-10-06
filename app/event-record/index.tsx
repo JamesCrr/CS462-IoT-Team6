@@ -87,7 +87,7 @@ export default function EventRecords() {
         loop={true}
       /> */}
       <View style={styles.details}>
-        {eventRecord && (
+      {eventRecord ? (
           <>
             <Text style={styles.detailText}>Achievements: {eventRecord.achievements.join(', ')}</Text>
             <Text style={styles.detailText}>Score: {eventRecord.score}/100</Text>
@@ -96,6 +96,8 @@ export default function EventRecords() {
             <Text style={styles.detailText}>Remarks: {eventRecord.remarks}</Text>
             <TextInput style={styles.input} placeholder="Leave Remarks" />
           </>
+        ) : (
+          <Text style={styles.noRecordText}>No Recorded Attendance</Text>
         )}
       </View>
     </SafeAreaView>
@@ -112,6 +114,7 @@ interface Styles {
   details: ViewStyle;
   detailText: TextStyle;
   input: TextStyle;
+  noRecordText: TextStyle;
 }
 
 const styles = StyleSheet.create<Styles>({
@@ -156,5 +159,9 @@ const styles = StyleSheet.create<Styles>({
     marginVertical: 10,
     borderWidth: 1,
     padding: 10,
-  }
+  }, 
+  noRecordText: {
+    fontSize: 18,
+    color: 'red',
+  },
 });
