@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 
-// import { TextInput } from "@react-native-material/core";
+import { Input } from "~/components/ui/input";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Modal from "react-native-modal";
 import {
@@ -13,6 +13,19 @@ import {
   eachDayOfInterval,
   addDays,
 } from "date-fns";
+
+import {
+  collection,
+  doc,
+  addDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  DocumentData,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "config/firebaseConfig.js";
 
 interface Event {
   id: string;
@@ -29,6 +42,7 @@ export default function ThirtyDayCalendar() {
     date: "",
     time: "",
   });
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [todayDate] = useState(new Date());
   const [view, setView] = useState<"month" | "week" | "day">("month");
@@ -36,7 +50,38 @@ export default function ThirtyDayCalendar() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  const retrieveAllEvents = async () => {
+    var events: Event[] = [];
+    const querySnapshot = await getDocs(collection(db, "events"));
+    querySnapshot.forEach((doc) => {
+      console.log(doc.data().dateTime);
+      const date = new Date(
+        doc.data().dateTime.seconds * 1000 +
+          doc.data().dateTime.nanoseconds / 1000000
+      );
+
+      var event: Event = {
+        id: doc.id,
+        title: doc.data().name,
+        date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(date.getDate()).padStart(2, "0")}`,
+        time: `${String(date.getHours()).padStart(2, "0")}:${String(
+          date.getMinutes()
+        ).padStart(2, "0")}`,
+      };
+      events.push(event);
+    });
+    console.log(events);
+    setEvents(events);
+  };
+
   useEffect(() => {
+    const retrieveData = async () => {
+      const res = await retrieveAllEvents();
+    };
+    retrieveData();
     setCurrentDate(new Date());
   }, []);
 
@@ -114,64 +159,64 @@ export default function ThirtyDayCalendar() {
     );
   };
 
-  const renderWeekView = () => {
-    const weekStart = startOfWeek(currentDate);
-    const weekEnd = endOfWeek(currentDate);
-    const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-    return (
-      <ScrollView horizontal>
-        <View style={styles.weekGrid}>
-          {days.map((day) => (
-            <View key={day.toISOString()} style={styles.weekDay}>
-              <Text style={styles.weekDayHeader}>{format(day, "EEE dd")}</Text>
-              <ScrollView>
-                {events
-                  .filter(
-                    (event) => event.date === formatDate(day.toISOString())
-                  )
-                  .map((event) => (
-                    <View key={event.id} style={styles.event}>
-                      <Text style={styles.eventTitle}>{event.title}</Text>
-                      <Text style={styles.eventTime}>{event.time}</Text>
-                    </View>
-                  ))}
-              </ScrollView>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    );
-  };
+  // const renderWeekView = () => {
+  //   const weekStart = startOfWeek(currentDate);
+  //   const weekEnd = endOfWeek(currentDate);
+  //   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  //   return (
+  //     <ScrollView horizontal>
+  //       <View style={styles.weekGrid}>
+  //         {days.map((day) => (
+  //           <View key={day.toISOString()} style={styles.weekDay}>
+  //             <Text style={styles.weekDayHeader}>{format(day, "EEE dd")}</Text>
+  //             <ScrollView>
+  //               {events
+  //                 .filter(
+  //                   (event) => event.date === formatDate(day.toISOString())
+  //                 )
+  //                 .map((event) => (
+  //                   <View key={event.id} style={styles.event}>
+  //                     <Text style={styles.eventTitle}>{event.title}</Text>
+  //                     <Text style={styles.eventTime}>{event.time}</Text>
+  //                   </View>
+  //                 ))}
+  //             </ScrollView>
+  //           </View>
+  //         ))}
+  //       </View>
+  //     </ScrollView>
+  //   );
+  // };
 
-  const renderDayView = () => {
-    const hours = Array.from({ length: 24 }, (_, i) => i);
+  // const renderDayView = () => {
+  //   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-    return (
-      <ScrollView>
-        {hours.map((hour) => (
-          <View key={hour} style={styles.hourRow}>
-            <Text style={styles.hourText}>
-              {format(new Date().setHours(hour), "HH:mm")}
-            </Text>
-            <View style={styles.hourEvents}>
-              {events
-                .filter(
-                  (event) =>
-                    event.date === formatDate(currentDate.toISOString()) &&
-                    parseInt(event.time.split(":")[0]) === hour
-                )
-                .map((event) => (
-                  <View key={event.id} style={styles.event}>
-                    <Text style={styles.eventTitle}>{event.title}</Text>
-                    <Text style={styles.eventTime}>{event.time}</Text>
-                  </View>
-                ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    );
-  };
+  //   return (
+  //     <ScrollView>
+  //       {hours.map((hour) => (
+  //         <View key={hour} style={styles.hourRow}>
+  //           <Text style={styles.hourText}>
+  //             {format(new Date().setHours(hour), "HH:mm")}
+  //           </Text>
+  //           <View style={styles.hourEvents}>
+  //             {events
+  //               .filter(
+  //                 (event) =>
+  //                   event.date === formatDate(currentDate.toISOString()) &&
+  //                   parseInt(event.time.split(":")[0]) === hour
+  //               )
+  //               .map((event) => (
+  //                 <View key={event.id} style={styles.event}>
+  //                   <Text style={styles.eventTitle}>{event.title}</Text>
+  //                   <Text style={styles.eventTime}>{event.time}</Text>
+  //                 </View>
+  //               ))}
+  //           </View>
+  //         </View>
+  //       ))}
+  //     </ScrollView>
+  //   );
+  // };
 
   const nextPeriod = () => {
     switch (view) {
@@ -209,7 +254,7 @@ export default function ThirtyDayCalendar() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Calendar</Text>
-        <View style={styles.viewButtons}>
+        {/* <View style={styles.viewButtons}>
           <Button
             style={styles.buttons}
             onPress={() => setView("month")}
@@ -231,7 +276,7 @@ export default function ThirtyDayCalendar() {
           >
             <Text>Week</Text>
           </Button>
-        </View>
+        </View> */}
         <View style={styles.navigationButtons}>
           <Button style={styles.buttons} onPress={prevPeriod}>
             <Text>Previous</Text>
@@ -243,21 +288,23 @@ export default function ThirtyDayCalendar() {
         </View>
       </View>
       {view === "month" && renderMonthView()}
-      {view === "week" && renderWeekView()}
-      {view === "day" && renderDayView()}
+      {/* {view === "week" && renderWeekView()}
+      {view === "day" && renderDayView()} */}
       <Button style={styles.buttons} onPress={() => setModalVisible(true)}>
         <Text>Add event</Text>
       </Button>
       <Modal isVisible={isModalVisible}>
         <View style={styles.modal}>
           <Text style={styles.modalTitle}>Add New Event</Text>
-          {/* <TextInput
-            label="Title"
+          <Input
+            placeholder="Write some stuff..."
             value={newEvent.title}
             onChangeText={(text: string) =>
               setNewEvent({ ...newEvent, title: text })
             }
-          /> */}
+            aria-labelledby="inputLabel"
+            aria-errormessage="inputError"
+          />
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>
             <Text>Date: {newEvent.date || "Select Date"}</Text>
           </TouchableOpacity>
@@ -353,7 +400,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   event: {
-    backgroundColor: "blue",
+    backgroundColor: "green",
     padding: 2,
     marginBottom: 2,
     borderRadius: 3,
@@ -396,7 +443,7 @@ const styles = StyleSheet.create({
     margin: 5,
   },
   modal: {
-    backgroundColor: "white",
+    backgroundColor: "black",
     padding: 20,
     borderRadius: 10,
   },
