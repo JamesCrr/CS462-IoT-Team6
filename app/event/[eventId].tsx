@@ -1,14 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { DocumentData } from "firebase/firestore";
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { fetchEvent } from "~/api/events";
 import { Button } from "~/components/ui/button";
@@ -69,6 +62,7 @@ export default function EventRecords() {
       } else {
         console.error(error);
       }
+      setEvent(undefined);
     } finally {
       setLoading(false);
     }
@@ -76,12 +70,12 @@ export default function EventRecords() {
 
   return (
     <SafeAreaView>
-      <View className="p-6 min-h-full bg-secondary/30">
+      <View className="px-3 min-h-full bg-secondary/30">
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           <View>
-            {event == null ? (
+            {event == undefined ? (
               <View className="flex-1 justify-center items-center">
                 <Text className="text-foreground">An error occurred</Text>
                 <Text className="text-foreground">Please try again</Text>
@@ -90,7 +84,7 @@ export default function EventRecords() {
               <View>
                 <ScrollView>
                   {/* <Text className="text-3xl font-bold">{event.name}</Text> */}
-                  <View className="">
+                  <View className="mt-5">
                     <Text className="text-2xl font-bold">Event Info</Text>
                     <Text className="">{event.information}</Text>
                   </View>
@@ -102,11 +96,7 @@ export default function EventRecords() {
                         <Text className="my-2" key={item}>
                           {item}
                         </Text>
-                        <Button
-                          variant="outline"
-                          className="shadow shadow-foreground/5"
-                          onPress={() => {}}
-                        >
+                        <Button variant="outline" className="shadow shadow-foreground/5" onPress={() => {}}>
                           <Text>See Location</Text>
                         </Button>
                       </View>
@@ -128,17 +118,13 @@ export default function EventRecords() {
                   </View>
 
                   {/* Need to change depending on Staff / Caregiver */}
-                  <Button
-                    variant="outline"
-                    className="mt-7 shadow shadow-foreground/5"
-                    onPress={() => {}}
-                  >
+                  <Button variant="outline" className="mt-7 shadow shadow-foreground/5" onPress={() => {}}>
                     <Text>Default</Text>
                   </Button>
 
                   <Button
                     variant="outline"
-                    className="mt-7 shadow shadow-foreground/5"
+                    className="mt-7 mb-7 shadow shadow-foreground/5"
                     onPress={() => router.push(`./editEvent/${eventId}`)}
                   >
                     <Text>edit</Text>

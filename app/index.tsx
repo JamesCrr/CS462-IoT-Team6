@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as React from "react";
 import { View, Text } from "react-native";
 import { Button } from "~/components/ui/button";
@@ -14,9 +15,16 @@ export default function Screen() {
       setType(label);
     };
   }
-  const signIn = () => {
+  const signIn = async () => {
     if (type == "") return;
     router.replace("/home");
+
+    // Store in AsyncStorage
+    try {
+      await AsyncStorage.setItem("identity", type);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (

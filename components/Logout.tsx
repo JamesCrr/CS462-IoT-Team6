@@ -7,8 +7,15 @@ export function Logout() {
   // const { isDarkColorScheme, setColorScheme } = useColorScheme();
   return (
     <Pressable
-      onPress={() => {
+      onPress={async () => {
         router.replace("/");
+
+        // Remove from AsyncStorage
+        try {
+          await AsyncStorage.removeItem("identity");
+        } catch (e) {
+          console.log(e);
+        }
       }}
     >
       <LogOut className="text-foreground" size={24} strokeWidth={1.25} />

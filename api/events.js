@@ -1,13 +1,4 @@
-import {
-  collection,
-  doc,
-  addDoc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import { collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { daysInWeek } from "date-fns/constants";
 
@@ -17,7 +8,6 @@ export async function fetchEvent(eventId = "") {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      console.log(docSnap.data());
       return docSnap.data();
     }
     // docSnap.data() will be undefined in this case
