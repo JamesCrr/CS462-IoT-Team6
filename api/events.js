@@ -1,4 +1,13 @@
-import { collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  addDoc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { daysInWeek } from "date-fns/constants";
 
@@ -49,6 +58,19 @@ export const updateEvent = async (eventId = "", eventpayload) => {
   } catch (e) {
     console.error("Error fetching documents: ", e.message);
     throw new Error("Failed to fetch event records");
+  }
+};
+
+export const InsertEvent = async (eventpayload) => {
+  try {
+    console.log(eventpayload);
+    const collectionRef = collection(db, "events");
+
+    await addDoc(collectionRef, eventpayload);
+    return "doc added";
+  } catch (e) {
+    console.error("Error adding documents: ", e.message);
+    throw new Error("Failed to add event records");
   }
 };
 

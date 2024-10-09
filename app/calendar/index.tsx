@@ -6,6 +6,7 @@ import { Text } from "~/components/ui/text";
 import { Input } from "~/components/ui/input";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Modal from "react-native-modal";
+import ItemList from "~/components/itemList";
 import {
   format,
   startOfWeek,
@@ -29,51 +30,47 @@ import { db } from "config/firebaseConfig.js";
 import { router } from "expo-router";
 
 interface Event {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
+  name: string;
+  location: string;
+  information: string;
+  datetime: Date;
+  id?: string;
+  meetUpLocations?: string[];
+  itemsToBring?: string[];
+  participants?: string[];
+  volunteers?: string[];
 }
 
 export default function ThirtyDayCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [newEvent, setNewEvent] = useState<Event>({
-    id: "",
-    title: "",
-    date: "",
-    time: "",
-  });
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [todayDate] = useState(new Date());
   const [view, setView] = useState<"month" | "week" | "day">("month");
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const retrieveAllEvents = async () => {
     var events: Event[] = [];
     const querySnapshot = await getDocs(collection(db, "events"));
     querySnapshot.forEach((doc) => {
-      console.log(doc.data().datetime);
       const date = new Date(
         doc.data().datetime.seconds * 1000 +
           doc.data().datetime.nanoseconds / 1000000
       );
       var event: Event = {
         id: doc.id,
-        title: doc.data().name,
-        date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-          2,
-          "0"
-        )}-${String(date.getDate()).padStart(2, "0")}`,
-        time: `${String(date.getHours()).padStart(2, "0")}:${String(
-          date.getMinutes()
-        ).padStart(2, "0")}`,
+        name: doc.data().name,
+        location: doc.data().location,
+        information: doc.data().information,
+        datetime: doc.data().datetime.toDate(), // Convert Firestore Timestamp to JavaScript Date
+        meetUpLocations: doc.data().meetUpLocations || [],
+        itemsToBring: doc.data().itemsToBring || [],
+        participants: doc.data().participants || [],
+        volunteers: doc.data().volunteers || [],
       };
+
       events.push(event);
     });
-    console.log(events);
+    console.log(events, "ALL EVENTS");
     setEvents(events);
   };
 
@@ -84,14 +81,6 @@ export default function ThirtyDayCalendar() {
     retrieveData();
     setCurrentDate(new Date());
   }, []);
-
-  const addEvent = () => {
-    if (newEvent.title && newEvent.date && newEvent.time) {
-      setEvents([...events, { ...newEvent, id: Date.now().toString() }]);
-      setNewEvent({ id: "", title: "", date: "", time: "" });
-      setModalVisible(false);
-    }
-  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -141,17 +130,27 @@ export default function ThirtyDayCalendar() {
                 <Text style={styles.dayNumber}>{day.getDate()}</Text>
                 <ScrollView>
                   {events
-                    .filter(
-                      (event) => event.date === formatDate(day.toISOString())
-                    )
+                    .filter((event) => {
+                      return (
+                        formatDate(event.datetime.toISOString()) ==
+                        formatDate(day.toISOString())
+                      );
+                    })
                     .map((event) => (
                       <TouchableOpacity
                         key={event.id}
                         onPress={() => router.push(`/event/${event.id}`)}
                       >
                         <View style={styles.event}>
-                          <Text style={styles.eventTitle}>{event.title}</Text>
-                          <Text style={styles.eventTime}>{event.time}</Text>
+                          <Text style={styles.eventTitle}>{event.name}</Text>
+                          <Text style={styles.eventTime}>
+                            {String(event.datetime.getHours()).padStart(2, "0")}
+                            :
+                            {String(event.datetime.getMinutes()).padStart(
+                              2,
+                              "0"
+                            )}
+                          </Text>
                         </View>
                       </TouchableOpacity>
                     ))}
@@ -295,67 +294,12 @@ export default function ThirtyDayCalendar() {
       {view === "month" && renderMonthView()}
       {/* {view === "week" && renderWeekView()}
       {view === "day" && renderDayView()} */}
-      <Button style={styles.buttons} onPress={() => setModalVisible(true)}>
+      <Button
+        style={styles.buttons}
+        onPress={() => router.push("/event/addEvent")}
+      >
         <Text>Add event</Text>
       </Button>
-      <Modal isVisible={isModalVisible}>
-        <View style={styles.modal}>
-          <Text style={styles.modalTitle}>Add New Event</Text>
-          <Input
-            placeholder="Write some stuff..."
-            value={newEvent.title}
-            onChangeText={(text: string) =>
-              setNewEvent({ ...newEvent, title: text })
-            }
-            aria-labelledby="inputLabel"
-            aria-errormessage="inputError"
-          />
-          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <Text>Date: {newEvent.date || "Select Date"}</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={new Date(newEvent.date || Date.now())}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) {
-                  setNewEvent({
-                    ...newEvent,
-                    date: format(selectedDate, "yyyy-MM-dd"),
-                  });
-                }
-              }}
-            />
-          )}
-          <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-            <Text>Time: {newEvent.time || "Select Time"}</Text>
-          </TouchableOpacity>
-          {showTimePicker && (
-            <DateTimePicker
-              value={new Date(`2000-01-01T${newEvent.time || "00:00"}`)}
-              mode="time"
-              display="default"
-              onChange={(event, selectedTime) => {
-                setShowTimePicker(false);
-                if (selectedTime) {
-                  setNewEvent({
-                    ...newEvent,
-                    time: format(selectedTime, "HH:mm"),
-                  });
-                }
-              }}
-            />
-          )}
-          <Button style={styles.buttons} onPress={addEvent}>
-            <Text>Add Event</Text>
-          </Button>
-          <Button style={styles.buttons} onPress={() => setModalVisible(false)}>
-            <Text>Cancel</Text>
-          </Button>
-        </View>
-      </Modal>
     </View>
   );
 }
