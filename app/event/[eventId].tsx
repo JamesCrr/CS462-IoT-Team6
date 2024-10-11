@@ -1,7 +1,15 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { DocumentData } from "firebase/firestore";
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { fetchEvent } from "~/api/events";
 import { Button } from "~/components/ui/button";
@@ -96,11 +104,26 @@ export default function EventRecords() {
                         <Text className="my-2" key={item}>
                           {item}
                         </Text>
-                        <Button variant="outline" className="shadow shadow-foreground/5" onPress={() => {}}>
+                        <Button
+                          variant="outline"
+                          className="shadow shadow-foreground/5"
+                          onPress={() => {}}
+                        >
                           <Text>See Location</Text>
                         </Button>
                       </View>
                     ))}
+                  </View>
+                  <View className="mt-7">
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.push(`../attendees/attendeesMap/${eventId}`);
+                      }}
+                    >
+                      <Text className="text-2xl font-bold">Event Location</Text>
+
+                      <Text>{event.location}</Text>
+                    </TouchableOpacity>
                   </View>
 
                   <View className="mt-7">
@@ -118,7 +141,11 @@ export default function EventRecords() {
                   </View>
 
                   {/* Need to change depending on Staff / Caregiver */}
-                  <Button variant="outline" className="mt-7 shadow shadow-foreground/5" onPress={() => {}}>
+                  <Button
+                    variant="outline"
+                    className="mt-7 shadow shadow-foreground/5"
+                    onPress={() => {}}
+                  >
                     <Text>Default</Text>
                   </Button>
 
