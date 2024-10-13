@@ -1,19 +1,21 @@
-import * as React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View } from "react-native";
+import { useState, useEffect } from "react";
+import { router } from "expo-router";
+import { Button } from "~/components/ui/button";
+import { Text } from "~/components/ui/text";
+import EventReminder from "~/components/EventReminder";
 import Animated, { FadeInUp, FadeOutDown, LayoutAnimationConfig } from "react-native-reanimated";
 import { Info } from "~/lib/icons/Info";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
-import { Text } from "~/components/ui/text";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
-import { router } from "expo-router";
-import EventReminder from "~/components/EventReminder";
-
 const GITHUB_AVATAR_URI = "https://i.pinimg.com/originals/ef/a2/8d/efa28d18a04e7fa40ed49eeb0ab660db.jpg";
 
 export default function Screen() {
+  const [identity, setIdentity] = useState<String>("");
+
   const viewCalendar = () => {
     router.push("/calendar");
   };
@@ -22,22 +24,45 @@ export default function Screen() {
     router.push("/event-attendees");
   };
 
+  const retrieveIdentity = async () => {
+    try {
+      const value = await AsyncStorage.getItem("identity");
+      if (value !== null) {
+        setIdentity(value);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    retrieveIdentity();
+  });
+
   return (
-    <View className="flex-1 justify-center items-center gap-5 p-6 bg-secondary/30">
-      <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCalendar}>
-        <Text>View Calendar</Text>
-      </Button>
-      <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
-        <Text>View Customers</Text>
-      </Button>
-      <Button
-        variant="outline"
-        className="shadow shadow-foreground/5"
-        onPress={() => router.push("/event/yT3ftXS0f0Ia8oz2W2Vw")}
-      >
-        <Text>View Event Info</Text>
-      </Button>
-      <EventReminder />
+    <View className="min-h-screen bg-secondary/30">
+      {/* <View className="flex-1 justify-center items-center max-h-12 border border-2">
+       
+      </View> */}
+      <View className="flex-1 justify-start items-center gap-5">
+        <Text className="text-lg my-11">
+          Hello <Text className="font-bold">{identity}</Text>
+        </Text>
+        <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCalendar}>
+          <Text>View Calendar</Text>
+        </Button>
+        <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
+          <Text>View Customers</Text>
+        </Button>
+        <Button
+          variant="outline"
+          className="shadow shadow-foreground/5"
+          onPress={() => router.push("/event/yT3ftXS0f0Ia8oz2W2Vw")}
+        >
+          <Text>View Event Info</Text>
+        </Button>
+        <EventReminder />
+      </View>
     </View>
     // <View className='flex-1 justify-center items-center gap-5 p-6 bg-secondary/30'>
     //   <Card className='w-full max-w-sm p-6 rounded-2xl'>
