@@ -43,7 +43,7 @@ export default function EventRecords() {
   const [event, setEvent] = useState<Event>();
   const [loading, setLoading] = useState<boolean>(false);
   const [newItem, setNewItem] = useState<string>();
-  const [newLocation, setNewLocation] = useState<string>();
+  const [newMeetUpLocation, setMeetUpLocation] = useState<string>();
   const [newParticipant, setNewParticipant] = useState<string>();
   const [newVolunteer, setNewVolunteer] = useState<string>();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -103,7 +103,6 @@ export default function EventRecords() {
   };
 
   const saveChanges = async () => {
-    // Add a new document in collection "cities"
     try {
       const res = await updateEvent(eventId, event);
       console.log(res);
@@ -119,6 +118,17 @@ export default function EventRecords() {
       return {
         ...event, // Spread the current event properties
         name: text, // Update the 'information' property
+      };
+    });
+  };
+
+  const editEventLocation = (text: string) => {
+    setEvent((event) => {
+      if (!event) return event; // Handle undefined case
+
+      return {
+        ...event, // Spread the current event properties
+        name: text, // Update the 'location' property
       };
     });
   };
@@ -163,14 +173,17 @@ export default function EventRecords() {
   };
 
   const onChangeTextAddLocation = (text: string) => {
-    setNewLocation(text);
+    setMeetUpLocation(text);
   };
 
   const addLocation = () => {
     setEvent((event) => {
       if (!event) return event; // Handle undefined case
-      if (!newLocation) return event;
-      const newLocations = [...(event.meetUpLocations ?? []), newLocation];
+      if (!newMeetUpLocation) return event;
+      const newLocations = [
+        ...(event.meetUpLocations ?? []),
+        newMeetUpLocation,
+      ];
 
       return {
         ...event, // Spread the current event properties
@@ -316,6 +329,17 @@ export default function EventRecords() {
                       aria-errormessage="inputError"
                     />
                     <Text>{event.name}</Text>
+                    <Text className="text-2xl font-bold">
+                      Edit Event Location
+                    </Text>
+                    <Input
+                      placeholder="Edit Event Name"
+                      value={event.location}
+                      onChangeText={editEventLocation}
+                      aria-labelledby="inputLabel"
+                      aria-errormessage="inputError"
+                    />
+                    <Text>{event.name}</Text>
                     <Text className="text-2xl font-bold">Edit Event Info</Text>
                     <Input
                       placeholder="Edit Event Info"
@@ -420,7 +444,7 @@ export default function EventRecords() {
                         </Text>
                         <Input
                           placeholder="New Item"
-                          value={newLocation}
+                          value={newMeetUpLocation}
                           onChangeText={onChangeTextAddLocation}
                           aria-labelledby="inputLabel"
                           aria-errormessage="inputError"

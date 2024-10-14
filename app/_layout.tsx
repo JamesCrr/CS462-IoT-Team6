@@ -37,23 +37,30 @@ export default function RootLayout() {
   React.useEffect(() => {
     (async () => {
       const theme = await AsyncStorage.getItem("theme");
+      const defaultTheme = "light"; // Set default to light
+
       if (Platform.OS === "web") {
         // Adds the background color to the html element to prevent white background on overscroll.
         document.documentElement.classList.add("bg-background");
       }
+
+      // If no theme is set, save the default light theme
       if (!theme) {
-        AsyncStorage.setItem("theme", colorScheme);
+        await AsyncStorage.setItem("theme", defaultTheme);
+        setColorScheme(defaultTheme); // Set the color scheme to light
+        setAndroidNavigationBar(defaultTheme);
         setIsColorSchemeLoaded(true);
         return;
       }
+
       const colorTheme = theme === "dark" ? "dark" : "light";
-      if (colorTheme !== colorScheme) {
-        setColorScheme(colorTheme);
-        setAndroidNavigationBar(colorTheme);
-        setIsColorSchemeLoaded(true);
-        return;
+
+      // Force the light theme
+      if (colorTheme !== defaultTheme) {
+        setColorScheme(defaultTheme);
+        setAndroidNavigationBar(defaultTheme);
       }
-      setAndroidNavigationBar(colorTheme);
+
       setIsColorSchemeLoaded(true);
     })().finally(() => {
       SplashScreen.hideAsync();

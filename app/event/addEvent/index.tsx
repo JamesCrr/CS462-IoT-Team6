@@ -118,7 +118,7 @@ export default function EventRecords() {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
       <View>
         <Text>Add New Event</Text>
         <Input
@@ -130,7 +130,7 @@ export default function EventRecords() {
           aria-labelledby="inputLabel"
           aria-errormessage="inputError"
         />
-        <Text>Add New Location</Text>
+        <Text style={styles.text}>Add New Location</Text>
         <Input
           placeholder="Location"
           value={newEvent.location}
@@ -140,7 +140,7 @@ export default function EventRecords() {
           aria-labelledby="inputLabel"
           aria-errormessage="inputError"
         />
-        <Text>Add information about event</Text>
+        <Text style={styles.text}>Add information about event</Text>
         <Input
           placeholder="Information"
           value={newEvent.information}
@@ -212,7 +212,10 @@ export default function EventRecords() {
         <Button style={styles.buttons} onPress={addEvent}>
           <Text>Add Event</Text>
         </Button>
-        <Button style={styles.buttons} onPress={() => setModalVisible(false)}>
+        <Button
+          style={styles.failbuttons}
+          onPress={() => setModalVisible(false)}
+        >
           <Text>Cancel</Text>
         </Button>
       </View>
@@ -226,9 +229,15 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  buttons: {
+  failbuttons: {
+    backgroundColor: "#ff4d4d", // Bright red
     margin: 5,
   },
+  buttons: {
+    backgroundColor: "#4caf50", // Common green
+    margin: 5,
+  },
+
   backButton: {
     marginBottom: 20,
   },
@@ -252,7 +261,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   text: {
-    color: "white",
+    marginTop: 10,
+    color: "black",
   },
   record: {
     padding: 10,

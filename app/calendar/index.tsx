@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+} from "react-native";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 
@@ -255,56 +261,61 @@ export default function ThirtyDayCalendar() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Calendar</Text>
-        {/* <View style={styles.viewButtons}>
-          <Button
-            style={styles.buttons}
-            onPress={() => setView("month")}
-            // color={view === "month" ? "primary" : "default"}
-          >
-            <Text>Month</Text>
-          </Button>
-          <Button
-            style={styles.buttons}
-            onPress={() => setView("week")}
-            // color={view === "week" ? "primary" : "default"}
-          >
-            <Text>Week</Text>
-          </Button>
-          <Button
-            style={styles.buttons}
-            onPress={() => setView("day")}
-            // color={view === "day" ? "primary" : "default"}
-          >
-            <Text>Week</Text>
-          </Button>
-        </View> */}
-        <View style={styles.navigationButtons}>
-          <Button style={styles.buttons} onPress={prevPeriod}>
-            <Text>Previous</Text>
-          </Button>
-          <Text>{format(currentDate, "MMMM yyyy")}</Text>
-          <Button style={styles.buttons} onPress={nextPeriod}>
-            <Text>Next period</Text>
-          </Button>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Calendar</Text>
+          {/* <View style={styles.viewButtons}>
+            <Button
+              style={styles.buttons}
+              onPress={() => setView("month")}
+              // color={view === "month" ? "primary" : "default"}
+            >
+              <Text>Month</Text>
+            </Button>
+            <Button
+              style={styles.buttons}
+              onPress={() => setView("week")}
+              // color={view === "week" ? "primary" : "default"}
+            >
+              <Text>Week</Text>
+            </Button>
+            <Button
+              style={styles.buttons}
+              onPress={() => setView("day")}
+              // color={view === "day" ? "primary" : "default"}
+            >
+              <Text>Day</Text>
+            </Button>
+          </View> */}
+          <View style={styles.navigationButtons}>
+            <Button style={styles.buttons} onPress={prevPeriod}>
+              <Text>&lt;</Text>
+            </Button>
+            <Text>{format(currentDate, "MMMM yyyy")}</Text>
+            <Button style={styles.buttons} onPress={nextPeriod}>
+              <Text>&gt;</Text>
+            </Button>
+          </View>
         </View>
+        {view === "month" && renderMonthView()}
+        {/* {view === "week" && renderWeekView()}
+        {view === "day" && renderDayView()} */}
+        <Button
+          style={styles.buttons}
+          onPress={() => router.push("/event/addEvent")}
+        >
+          <Text>Add event</Text>
+        </Button>
       </View>
-      {view === "month" && renderMonthView()}
-      {/* {view === "week" && renderWeekView()}
-      {view === "day" && renderDayView()} */}
-      <Button
-        style={styles.buttons}
-        onPress={() => router.push("/event/addEvent")}
-      >
-        <Text>Add event</Text>
-      </Button>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     padding: 20,
@@ -316,7 +327,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
   },
   viewButtons: {
