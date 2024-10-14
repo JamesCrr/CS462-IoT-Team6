@@ -80,54 +80,60 @@
   const auth = getAuth();
   
   export default function Screen() {
-    const [type, setType] = React.useState("");
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const [userName, setUserName] = React.useState(""); // Changed from 'name' to 'userName'
+    const [userData, setUserData] = React.useState({
+      type: "",
+      email: "",
+      password: "",
+      displayName: ""
+    });
     const [isRegistering, setIsRegistering] = React.useState(false);
+  
+    const updateUserData = (field: string, value: string) => {
+      setUserData(prevData => ({ ...prevData, [field]: value }));
+    };
   
     function onLabelPress(label: string) {
       return () => {
-        setType(label);
+        updateUserData("type", label);
       };
     }
   
     const authenticate = async () => {
-      if (isRegistering && (type === "" || userName === "")) {
+      if (isRegistering && (userData.type === "" || userData.displayName === "")) {
         Alert.alert("Error", "Please fill in all fields and select a user type.");
         return;
       }
-      if (!isRegistering && (email === "" || password === "")) {
+      if (!isRegistering && (userData.email === "" || userData.password === "")) {
         Alert.alert("Error", "Please fill in all fields.");
         return;
       }
   
       try {
         let userCredential;
-        let userType = type;
+        let userType = userData.type;
   
         if (isRegistering) {
-          userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          // Store user type and name in Firestore
+          userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+          // Store user type and display name in Firestore
           await setDoc(doc(db, "users", userCredential.user.uid), {
             type: userType,
-            email: email,
-            name: userName
+            email: userData.email,
+            displayName: userData.displayName
           });
         } else {
-          userCredential = await signInWithEmailAndPassword(auth, email, password);
-          // Fetch user type and name from Firestore
+          userCredential = await signInWithEmailAndPassword(auth, userData.email, userData.password);
+          // Fetch user type and display name from Firestore
           const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
           if (userDoc.exists()) {
             userType = userDoc.data().type;
-            userName = userDoc.data().name;
+            userData.displayName = userDoc.data().displayName;
           } else {
             throw new Error("User data not found");
           }
         }
   
         // Store user info in AsyncStorage
-        const user = { email: userCredential.user.email, type: userType, name: userName, uid: userCredential.user.uid };
+        const user = { email: userCredential.user.email, type: userType, displayName: userData.displayName, uid: userCredential.user.uid };
         await AsyncStorage.setItem("user", JSON.stringify(user));
   
         if (userType === "Caregiver") {
@@ -143,8 +149,11 @@
   
     const toggleMode = () => {
       setIsRegistering(!isRegistering);
-      setType("");
-      setUserName(""); // Reset userName when toggling between register and sign in
+      setUserData(prevData => ({
+        ...prevData,
+        type: "",
+        displayName: ""
+      }));
     };
   
     return (
@@ -157,36 +166,36 @@
             
             {isRegistering && (
               <TextInput
-                placeholder="Name"
-                value={userName}
-                onChangeText={setUserName}
+                placeholder="Display Name"
+                value={userData.displayName}
+                onChangeText={(value) => updateUserData("displayName", value)}
                 className="border border-gray-300 rounded-md p-2 mb-2"
               />
             )}
             
             <TextInput
               placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
+              value={userData.email}
+              onChangeText={(value) => updateUserData("email", value)}
               className="border border-gray-300 rounded-md p-2 mb-2"
             />
             <TextInput
               placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
+              value={userData.password}
+              onChangeText={(value) => updateUserData("password", value)}
               secureTextEntry
               className="border border-gray-300 rounded-md p-2 mb-4"
             />
             
             {isRegistering && (
-              <RadioGroup value={type} onValueChange={setType} className="gap-3 mb-4">
+              <RadioGroup value={userData.type} onValueChange={(value) => updateUserData("type", value)} className="gap-3 mb-4">
                 <RadioGroupItemWithLabel value="Staff" onLabelPress={onLabelPress("Staff")} />
                 <RadioGroupItemWithLabel value="Caregiver" onLabelPress={onLabelPress("Caregiver")} />
               </RadioGroup>
             )}
   
             <Button 
-              disabled={(isRegistering && (type === "" || userName === "")) || email === "" || password === ""} 
+              disabled={(isRegistering && (userData.type === "" || userData.displayName === "")) || userData.email === "" || userData.password === ""} 
               onPress={authenticate} 
               variant={"outline"} 
               className={"shadow shadow-foreground/5 mb-2"}
