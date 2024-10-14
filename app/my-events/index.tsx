@@ -8,37 +8,41 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { fetchAllEvents } from "../../api/events"; // Adjust the import path as needed
-import { router } from "expo-router";
+import { fetchAllEventsOfUser } from "../../api/events"; // Adjust the import path as needed
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRoute } from "@react-navigation/native";
 
 interface Event {
   eventId: string;
   name: string;
-  eventParticipants: string[];
 }
 
-interface Attendee {
-  userId: string;
-}
+// type RootStackParamList = {
+//   "event-record": { eventId: string | null; userId: string }; 
+// };
+
+// const { userId, tab } = useLocalSearchParams<{
+//   userId: string;
+//   tab?: string;
+// }>();
 
 type RootStackParamList = {
-  "event-record": { eventId: string | null; userId: string }; 
+  "my-events": { userId: string }; 
 };
 
-export default function EventAttendees() {
+export default function EventRecords() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
-  const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [identity, setIdentity] = useState<String>("");
+  const [identity, setIdentity] = useState<string>("");
+  const route = useRoute();
+  const { userId } = route.params as { userId: string };
 
   const retrieveIdentity = async () => {
     try {
       const value = await AsyncStorage.getItem("identity");
-      console.log("Identity:", identity)
       if (value !== null) {
         setIdentity(value);
       }
@@ -48,31 +52,24 @@ export default function EventAttendees() {
   };
 
   useEffect(() => {
+    console.log("userId:", userId)
     retrieveIdentity();
-  });
-
-
-  useEffect(() => {
     fetchEvents();
   }, []);
 
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const fetchedEvents = await fetchAllEvents();
-      // console.log("FetchEvents:", fetchedEvents);
+      console.log("UserId:", userId);
+      const fetchedEvents = await fetchAllEventsOfUser(userId);
       if (fetchedEvents == null) {
         console.log("Failed to fetch events");
         throw new Error("Failed to fetch events");
       } else {
-        fetchedEvents.map((event) => {
-          console.log("Event:", event, "\n");
-        });
         setEvents(
           fetchedEvents.map((event) => ({
             eventId: event.eventId,
             name: event.name,
-            eventParticipants: event.participants,
           }))
         );
       }
@@ -83,25 +80,11 @@ export default function EventAttendees() {
     }
   };
 
-  const selectEvent = async (eventId: string) => {
-    setLoading(true);
-    try {
-      const selectedEvent = events.find((event) => event.eventId === eventId);
-      console.log("Selected Event:", selectedEvent);
-      setSelectedEvent(eventId);
-
-      if (selectedEvent?.eventParticipants) {
-        setAttendees(
-          selectedEvent.eventParticipants.map((userId) => ({ userId }))
-        );
-      } else {
-        setAttendees([]);
-      }
-    } catch (error) {
-      console.error("Failed to select event or fetch attendees:", error);
-    } finally {
-      setLoading(false);
-    }
+  const navigateToEventRecord = (eventId: string) => {
+    router.push({
+      pathname: "/event-record",
+      params: { eventId: eventId, userId: userId }, // Using the retrieved identity as userId
+    });
   };
 
   if (loading) {
@@ -116,27 +99,11 @@ export default function EventAttendees() {
           <TouchableOpacity
             key={event.eventId}
             style={styles.eventItem}
-            onPress={() => selectEvent(event.eventId)}
+            onPress={() => navigateToEventRecord(event.eventId)} // Navigate to event-record page on event click
           >
             <Text style={styles.eventText}>{event.name}</Text>
           </TouchableOpacity>
         ))}
-        <View style={styles.attendeeContainer}>
-          {attendees.map((attendee) => (
-            <TouchableOpacity
-              key={attendee.userId}
-              style={styles.attendee}
-              onPress={() =>
-              selectedEvent && router.push({
-                pathname: "/event-record",
-                params: { eventId: selectedEvent, userId: attendee.userId },
-              })
-              }
-            >
-              <Text style={styles.attendeeText}>{attendee.userId}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -169,19 +136,5 @@ const styles = StyleSheet.create({
   eventText: {
     fontSize: 16,
     color: "#333",
-  },
-  attendeeContainer: {
-    marginTop: 20,
-  },
-  attendee: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    backgroundColor: "#fff",
-    marginBottom: 5,
-  },
-  attendeeText: {
-    fontSize: 16,
-    color: "#555",
   },
 });

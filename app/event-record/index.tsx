@@ -8,7 +8,8 @@ import { fetchEvent } from "~/api/events";
 import { Button } from "~/components/ui/button";
 import { fetchEventRecord } from "~/api/eventRecords";
 import { useRoute } from "@react-navigation/native";
-import Carousel from 'react-native-snap-carousel';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// import Carousel from 'react-native-snap-carousel';
 
 interface CarouselPhotos {
   title: string;
@@ -40,6 +41,23 @@ export default function EventRecords() {
 
   const [eventRecord, setEventRecord] = useState<EventUserRecords | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [identity, setIdentity] = useState<String>("");
+
+  const retrieveIdentity = async () => {
+    try {
+      const value = await AsyncStorage.getItem("identity");
+      console.log("Identity:", identity)
+      if (value !== null) {
+        setIdentity(value);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    retrieveIdentity();
+  });
 
 
   useEffect(() => {
@@ -72,7 +90,9 @@ export default function EventRecords() {
             <Text style={styles.detailText}>Score: {eventRecord.score}/100</Text>
             <Text style={styles.detailText}>Completion %: {eventRecord.completion}%</Text>
             <Text style={styles.detailText}>Rank: {eventRecord.rank}</Text>
-            <TextInput style={styles.input} placeholder="Leave Remarks" defaultValue={eventRecord.remarks} />
+            {identity=="Staff" ? (<><Text style={styles.detailText}>Reviews:</Text><TextInput style={styles.input} placeholder="Leave Remarks" defaultValue={eventRecord.remarks} /></>) : (
+              <Text style={styles.detailText}>Reviews: {eventRecord.remarks}</Text>
+            )}
             <Button
               variant="outline"
               style={styles.input}
