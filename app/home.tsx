@@ -51,9 +51,16 @@ export default function Screen() {
         <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCalendar}>
           <Text>View Calendar</Text>
         </Button>
-        <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
+        {identity== "Staff" ? ( <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
           <Text>View Customers</Text>
-        </Button>
+        </Button>) : (<Button variant="outline" className="shadow shadow-foreground/5" 
+        onPress={()=> {
+          router.push({
+            pathname: "/my-events",
+            params: {userId: "userId1"},
+          })}}>
+          <Text>My Events</Text>
+        </Button>)}
         <Button
           variant="outline"
           className="shadow shadow-foreground/5"
