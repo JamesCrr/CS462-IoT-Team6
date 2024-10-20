@@ -9,6 +9,8 @@ import {
   deleteDoc,
   query,
   where,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 
@@ -93,6 +95,25 @@ export const fetchAllEventsOfUser = async (userId) => {
       volunteers: doc.data().volunteers,
     }));
     return events;
+  } catch (e) {
+    console.error("Error fetching documents: ", e.message);
+    throw new Error("Failed to fetch event records");
+  }
+};
+
+export const userJoinEvent = async (eventId, userName, meetingLocation, comingWithCaregiver) => {
+  try {
+    const eventDoc = doc(db, "events", eventId);
+    /**
+     * If your document contains an array field, you can use arrayUnion() and arrayRemove() to add and remove elements.
+     * arrayUnion() adds elements to an array but only elements not already present.
+     * arrayRemove() removes all instances of each given element.
+     */
+    await updateDoc(eventDoc, {
+      participants: arrayUnion(`${userName},${meetingLocation},${comingWithCaregiver}`),
+    });
+
+    return true;
   } catch (e) {
     console.error("Error fetching documents: ", e.message);
     throw new Error("Failed to fetch event records");
