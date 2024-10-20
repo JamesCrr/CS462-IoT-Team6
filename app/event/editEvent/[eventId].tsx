@@ -16,6 +16,9 @@ import { useNavigation } from "@react-navigation/native";
 import { fetchEvent, updateEvent } from "~/api/events";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Switch } from "~/components/ui/switch";
+import { Label } from "~/components/ui/label";
+
 import {
   Popover,
   PopoverContent,
@@ -44,7 +47,10 @@ export default function EventRecords() {
   const [loading, setLoading] = useState<boolean>(false);
   const [newItem, setNewItem] = useState<string>();
   const [newMeetUpLocation, setMeetUpLocation] = useState<string>();
-  const [newParticipant, setNewParticipant] = useState<string>();
+  const [newParticipantName, setNewParticipantName] = useState<string>();
+  const [newParticipantLocation, setNewParticipantLocation] =
+    useState<string>();
+  const [newParticipantCaregiver, setNewParticipantCaregiver] = useState(false);
   const [newVolunteer, setNewVolunteer] = useState<string>();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -207,11 +213,15 @@ export default function EventRecords() {
     });
   };
 
-  const onChangeTextAddParticipant = (text: string) => {
-    setNewParticipant(text);
-  };
+  // const onChangeTextAddParticipant = (text: string) => {
+  //   setNewParticipant(text);
+  // };
 
   const addParticipant = () => {
+    const newParticipant = `${newParticipantName},${newParticipantLocation},${
+      newParticipantCaregiver ? "yes" : "no"
+    }`;
+
     setEvent((event) => {
       if (!event) return event; // Handle undefined case
       if (!newParticipant) return event;
@@ -487,33 +497,67 @@ export default function EventRecords() {
                         <Text className="font-medium leading-none native:text-xl">
                           Add New Participant
                         </Text>
+                        <Label>Name:</Label>
                         <Input
-                          placeholder="New Item"
-                          value={newParticipant}
-                          onChangeText={onChangeTextAddParticipant}
-                          aria-labelledby="inputLabel"
-                          aria-errormessage="inputError"
+                          placeholder="Enter Participant Name"
+                          value={newParticipantName}
+                          onChangeText={setNewParticipantName}
+                          aria-labelledby="nameLabel"
+                          aria-errormessage="nameError"
+                        />
+
+                        {/* Input for Participant Location */}
+                        <Label>Meet up location:</Label>
+                        <Input
+                          placeholder="Enter Participant Location"
+                          value={newParticipantLocation}
+                          onChangeText={setNewParticipantLocation}
+                          aria-labelledby="locationLabel"
+                          aria-errormessage="locationError"
+                        />
+                        {/* Input for Caregiver (Checkbox or Switch) */}
+                        <Label
+                          nativeID="airplane-mode"
+                          onPress={() => {
+                            setNewParticipantCaregiver((prev) => !prev);
+                          }}
+                        >
+                          Has Caregiver:
+                        </Label>
+
+                        <Switch
+                          checked={newParticipantCaregiver}
+                          onCheckedChange={setNewParticipantCaregiver}
+                          nativeID="airplane-mode"
                         />
                         <Button variant="outline" onPress={addParticipant}>
                           <Text>Add</Text>
                         </Button>
                       </PopoverContent>
                     </Popover>
-                    {event.participants?.map((participant) => (
-                      <View className="mb-7">
-                        <Text key={participant}>{participant}</Text>
 
-                        <Button
-                          variant="outline"
-                          className="shadow shadow-foreground/5"
-                          onPress={() => {
-                            deleteParticipant(participant);
-                          }}
-                        >
-                          <Text>Delete Participant</Text>
-                        </Button>
-                      </View>
-                    ))}
+                    {event.participants?.map((participant, index) => {
+                      const [name, location, caregiver] =
+                        participant.split(",");
+
+                      return (
+                        <View key={index} className="mb-7">
+                          <Text>Name: {name}</Text>
+                          <Text>Location: {location}</Text>
+                          <Text>Has Caregiver: {caregiver}</Text>
+
+                          <Button
+                            variant="outline"
+                            className="shadow shadow-foreground/5"
+                            onPress={() => {
+                              deleteParticipant(participant);
+                            }}
+                          >
+                            <Text>Delete Participant</Text>
+                          </Button>
+                        </View>
+                      );
+                    })}
                   </View>
 
                   <View className="mt-7">
