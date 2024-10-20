@@ -13,8 +13,15 @@ import { Progress } from "~/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 const GITHUB_AVATAR_URI = "https://i.pinimg.com/originals/ef/a2/8d/efa28d18a04e7fa40ed49eeb0ab660db.jpg";
 
+interface User {
+  email: string;
+  type: string;
+  displayName: string;
+  uid: string;
+}
+
 export default function Screen() {
-  const [identity, setIdentity] = useState<String>("");
+  const [identity, setIdentity] = useState<User>();
 
   const viewCalendar = () => {
     router.push("/calendar");
@@ -26,9 +33,13 @@ export default function Screen() {
 
   const retrieveIdentity = async () => {
     try {
-      const value = await AsyncStorage.getItem("identity");
-      if (value !== null) {
-        setIdentity(value);
+      const userData = await AsyncStorage.getItem("user");
+      if (!userData) {
+        return;
+      }
+      const parsed: User = JSON.parse(userData);
+      if (parsed !== null) {
+        setIdentity(parsed);
       }
     } catch (e) {
       console.error(e);
@@ -36,38 +47,47 @@ export default function Screen() {
   };
 
   useEffect(() => {
-    retrieveIdentity();
+    // retrieveIdentity();
   });
 
   return (
     <View className="min-h-screen bg-secondary/30">
-      {/* <View className="flex-1 justify-center items-center max-h-12 border border-2">
-       
-      </View> */}
       <View className="flex-1 justify-start items-center gap-5">
         <Text className="text-lg my-11">
-          Hello <Text className="font-bold">{identity}</Text>
+          {/* {identity && <Text className="font-bold">Hello {identity["displayName"]}</Text>} */}
         </Text>
         <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCalendar}>
           <Text>View Calendar</Text>
         </Button>
-        {identity== "Staff" ? ( <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
-          <Text>View Customers</Text>
-        </Button>) : (<Button variant="outline" className="shadow shadow-foreground/5" 
-        onPress={()=> {
-          router.push({
-            pathname: "/my-events",
-            params: {userId: "userId1"},
-          })}}>
-          <Text>My Events</Text>
-        </Button>)}
-        <Button
+
+        <View>
+          {/* For Staff ONLY */}
+          <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
+            <Text>View Customers</Text>
+          </Button>
+
+          {/* For Caregivers ONLY */}
+          <Button
+            variant="outline"
+            className="shadow shadow-foreground/5"
+            onPress={() => {
+              router.push({
+                pathname: "/my-events",
+                params: { userId: "userId1" },
+              });
+            }}
+          >
+            <Text>My Events</Text>
+          </Button>
+        </View>
+
+        {/* <Button
           variant="outline"
           className="shadow shadow-foreground/5"
           onPress={() => router.push("/event/yT3ftXS0f0Ia8oz2W2Vw")}
         >
           <Text>View Event Info</Text>
-        </Button>
+        </Button> */}
         <EventReminder />
       </View>
     </View>

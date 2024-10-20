@@ -1,10 +1,13 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { DocumentData } from "firebase/firestore";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { fetchEvent } from "~/api/events";
+import { fetchEvent, userJoinEvent } from "~/api/events";
+import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Checkbox } from "~/components/ui/checkbox";
 
 interface Event {
   name: string;
@@ -21,6 +24,8 @@ export default function EventRecords() {
   const navigation = useNavigation();
   const [event, setEvent] = useState<Event>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [meetLocation, setMeetLocation] = useState<string>("");
+  const [comingWithCaregiver, setComingWithCaregiver] = useState<boolean>(false);
 
   // The route parameter, An optional search parameter
   const { eventId, tab } = useLocalSearchParams<{
@@ -50,7 +55,7 @@ export default function EventRecords() {
         throw new Error("");
       }
       setEvent(mapFirestoreToEvent(event));
-      setTitle(event.name);
+      setTitle("Joining " + event.name);
     } catch (error) {
       if (error instanceof Error) {
         console.error(error.message);
@@ -65,6 +70,26 @@ export default function EventRecords() {
 
   const setTitle = (newTitle: any) => {
     navigation.setOptions({ title: newTitle });
+  };
+
+  const onMeetLocationPress = (label: string) => {
+    return () => {
+      setMeetLocation(label);
+    };
+  };
+
+  /**
+   * Function to join event
+   */
+  const joinEvent = async () => {
+    try {
+      await userJoinEvent(eventId, "username", meetLocation, comingWithCaregiver ? "yes" : "no");
+
+      // Success, return to event page
+      router.replace(`/event/${eventId}`);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -89,51 +114,46 @@ export default function EventRecords() {
                   {/* <Text className="text-3xl font-bold">{event.name}</Text> */}
                   <View className="mt-5">
                     <Text className="text-2xl font-bold">Event Info</Text>
-                    <Text className="">{event.information}</Text>
+                    <Text className="p-6">{event.information}</Text>
                   </View>
 
                   <View className="mt-7">
                     <Text className="text-2xl font-bold">Things to bring</Text>
                     {event.itemsToBring?.map((item) => (
-                      <View key={item} className="mb-7">
-                        <Text className="my-2">{item}</Text>
-                        <Button variant="outline" className="shadow shadow-foreground/5" onPress={() => {}}>
-                          <Text>See Location</Text>
-                        </Button>
+                      <View key={item} className="">
+                        <Text className="ml-6 my-2">{item}</Text>
                       </View>
                     ))}
                   </View>
 
                   <View className="mt-7">
-                    <Text className="text-2xl font-bold">Where to meet</Text>
-                    {event.meetUpLocations?.map((location) => (
-                      <Text key={location}>{location}</Text>
-                    ))}
+                    <Text className="text-2xl font-bold">Where do you want to meet us?</Text>
+                    <View className="flex-1 justify-center p-6">
+                      <RadioGroup value={meetLocation} onValueChange={setMeetLocation} className="gap-3">
+                        {event.meetUpLocations?.map((location) => (
+                          <RadioGroupItemWithLabel
+                            key={location}
+                            value={location}
+                            onLabelPress={onMeetLocationPress(location)}
+                          />
+                        ))}
+                      </RadioGroup>
+                    </View>
                   </View>
 
                   <View className="mt-7">
-                    <Text className="text-2xl font-bold">Participants</Text>
-                    {event.participants?.map((participant) => (
-                      <Text key={participant}>{participant.split(",")[0]}</Text>
-                    ))}
+                    <Text className="text-2xl font-bold">Coming with Caregiver?</Text>
+                    <View className="flex-1 justify-start p-6">
+                      <View className="flex-1 flex-row justify-start items-center">
+                        <Checkbox checked={comingWithCaregiver} onCheckedChange={setComingWithCaregiver} />{" "}
+                        <Text className="ml-2">Yes I am!</Text>
+                      </View>
+                    </View>
                   </View>
 
                   {/* Need to change depending on Staff / Caregiver */}
-                  {/* Need to change depending on Staff / Caregiver */}
-                  <Button
-                    variant="outline"
-                    className="mt-7 shadow shadow-foreground/5"
-                    onPress={() => router.push(`./joinEvent/${eventId}`)}
-                  >
+                  <Button variant="outline" className="mt-7 shadow shadow-foreground/5" onPress={joinEvent}>
                     <Text>Join Event</Text>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="mt-7 mb-7 shadow shadow-foreground/5"
-                    onPress={() => router.push(`./editEvent/${eventId}`)}
-                  >
-                    <Text>Edit Event</Text>
                   </Button>
                 </ScrollView>
               </View>
@@ -142,43 +162,17 @@ export default function EventRecords() {
         )}
       </View>
     </SafeAreaView>
+  );
+}
 
-    // <View style={styles.container}>
-    //   <Text style={styles.title}>Event Records</Text>
-    //   <TextInput
-    //     style={styles.input}
-    //     placeholder="Search by User ID"
-    //     value={userId}
-    //     onChangeText={setUserId}
-    //   />
-    //   <TextInput
-    //     style={styles.input}
-    //     placeholder="Search by Event ID"
-    //     value={eventId}
-    //     onChangeText={setEventId}
-    //   />
-    //   <Button title="Search" onPress={handleSearch} />
-    //   {loading ? (
-    //     <ActivityIndicator size="large" color="#0000ff" />
-    //   ) : (
-    //     <ScrollView style={styles.recordsContainer}>
-    //       {eventRecords.map((record) => (
-    //         <View key={record.id} style={styles.record}>
-    //           <Text>User ID: {record.userId}</Text>
-    //           <Text>Event ID: {record.eventId}</Text>
-    //           <Text>Performance:</Text>
-    //           <Text>  Achievements: {record.performance?.achievements?.length ? record.performance.achievements.join(", ") : "N/A"}</Text>
-    //           <Text>  Completion Percentage: {record.performance?.completionPercentage !== undefined ? record.performance.completionPercentage * 100 : "N/A"}%</Text>
-    //           <Text>  Rank: {record.performance?.rank !== undefined ? record.performance.rank : "N/A"}</Text>
-    //           <Text>  Score: {record.performance?.score !== undefined ? record.performance.score : "N/A"}</Text>
-    //           <Text>Remarks:</Text>
-    //           <Text>  Caregiver: {record.remarks?.caregiver || "N/A"}</Text>
-    //           <Text>  Community Worker: {record.remarks?.communityWorker || "N/A"}</Text>
-    //         </View>
-    //       ))}
-    //     </ScrollView>
-    //   )}
-    // </View>
+function RadioGroupItemWithLabel({ value, onLabelPress }: { value: string; onLabelPress: () => void }) {
+  return (
+    <View className={"flex-row gap-2 items-center"}>
+      <RadioGroupItem aria-labelledby={`label-for-${value}`} value={value} />
+      <Label nativeID={`label-for-${value}`} onPress={onLabelPress}>
+        {value}
+      </Label>
+    </View>
   );
 }
 
