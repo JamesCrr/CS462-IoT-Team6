@@ -31,15 +31,14 @@ export async function fetchEventRecord(eventId, userId) {
     if (eventDoc.exists()) {
       const eventData = eventDoc.data();
       console.log("UserRecords", eventData.records);
-      const userRecord = eventData.records.find(record => record.userId === userId);
+      console.log("UserId", userId);
 
-      if (userRecord) {
-        console.log("User Record:", userRecord);
-        return userRecord;
-      } else {
-        console.log("User not found in records");
-        return null;
-      }
+      // Iterate through the records array to find the user record
+      const userRecord = eventData.records.find(record => record[userId]);
+
+      console.log("UserRecord", userRecord ? userRecord[userId] : null);
+      return userRecord ? userRecord[userId] : null;
+
     } else {
       console.log("No such document!");
       return null;

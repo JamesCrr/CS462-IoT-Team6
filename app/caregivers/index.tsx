@@ -17,7 +17,7 @@ export default function Screen() {
   const [identity, setIdentity] = useState<String>("");
 
   const viewCalendar = () => {
-    router.push("/calendar");
+    router.push("/caregivers/calendar");
   };
 
   const viewCustomers = () => {
@@ -51,16 +51,9 @@ export default function Screen() {
         <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCalendar}>
           <Text>View Calendar</Text>
         </Button>
-        {identity== "Staff" ? ( <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
+        <Button variant="outline" className="shadow shadow-foreground/5" onPress={viewCustomers}>
           <Text>View Customers</Text>
-        </Button>) : (<Button variant="outline" className="shadow shadow-foreground/5" 
-        onPress={()=> {
-          router.push({
-            pathname: "/my-events",
-            params: {userId: "userId1"},
-          })}}>
-          <Text>My Events</Text>
-        </Button>)}
+        </Button>
         <Button
           variant="outline"
           className="shadow shadow-foreground/5"

@@ -7,9 +7,10 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
-import { daysInWeek } from "date-fns/constants";
 
 export async function fetchEvent(eventId = "") {
   try {
@@ -71,6 +72,30 @@ export const InsertEvent = async (eventpayload) => {
   } catch (e) {
     console.error("Error adding documents: ", e.message);
     throw new Error("Failed to add event records");
+  }
+};
+export const fetchAllEventsOfUser = async (userId) => {
+  try {
+    const eventsCollection = collection(db, "events");
+    const q = query(
+      eventsCollection,
+      where("participants", "array-contains", userId)
+    );
+    const querySnapshot = await getDocs(q);
+    const events = querySnapshot.docs.map((doc) => ({
+      dateTime: doc.data().dateTime,
+      eventId: doc.id,
+      information: doc.data().information,
+      itemsToBring: doc.data().itemsToBring,
+      meetUpLocation: doc.data().meetUpLocation,
+      name: doc.data().name,
+      participants: doc.data().participants,
+      volunteers: doc.data().volunteers,
+    }));
+    return events;
+  } catch (e) {
+    console.error("Error fetching documents: ", e.message);
+    throw new Error("Failed to fetch event records");
   }
 };
 
